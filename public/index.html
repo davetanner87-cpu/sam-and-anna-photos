@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Share Your Photos 📸</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --gold: #c9a84c;
+      --dark: #1a1a1a;
+      --cream: #faf8f4;
+      --border: #e8e2d8;
+    }
+    body {
+      font-family: -apple-system, 'Helvetica Neue', sans-serif;
+      background: var(--cream);
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 0 0 60px;
+    }
+
+    /* HEADER */
+    header {
+      width: 100%; text-align: center;
+      padding: 48px 24px 36px;
+      background: var(--dark);
+      color: #fff;
+    }
+    .rings { font-size: 36px; margin-bottom: 12px; }
+    header h1 { font-size: 28px; font-weight: 300; letter-spacing: 1px; margin-bottom: 6px; }
+    header h1 strong { font-weight: 700; }
+    header p { font-size: 14px; color: rgba(255,255,255,0.55); letter-spacing: 2px; text-transform: uppercase; }
+    .gold-rule { width: 60px; height: 2px; background: var(--gold); margin: 16px auto 0; }
+
+    /* MAIN CARD */
+    .card {
+      width: 100%; max-width: 480px;
+      background: #fff; margin: 32px 16px 0;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 32px 28px;
+    }
+
+    .card h2 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+    .card .sub { font-size: 13px; color: #888; margin-bottom: 28px; line-height: 1.5; }
+
+    /* NAME INPUT */
+    .field { margin-bottom: 20px; }
+    .field label { display: block; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 8px; font-weight: 500; }
+    .field input {
+      width: 100%; padding: 14px 16px;
+      border: 1.5px solid var(--border); border-radius: 2px;
+      font-size: 16px; color: var(--dark);
+      background: var(--cream);
+      outline: none; transition: border-color 0.2s;
+    }
+    .field input:focus { border-color: var(--gold); }
+
+    /* DROP ZONE */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 2px;
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--cream);
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .dropzone:hover, .dropzone.dragover { border-color: var(--gold); background: #fdf9f0; }
+    .dropzone input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .dropzone-icon { font-size: 40px; margin-bottom: 12px; }
+    .dropzone h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .dropzone p { font-size: 13px; color: #888; }
+
+    /* PREVIEW GRID */
+    .preview-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      margin-bottom: 20px; display: none;
+    }
+    .preview-grid.visible { display: grid; }
+    .preview-item { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 2px; background: #eee; }
+    .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-item .remove {
+      position: absolute; top: 4px; right: 4px;
+      background: rgba(0,0,0,0.6); color: #fff;
+      border: none; border-radius: 50%; width: 22px; height: 22px;
+      font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .preview-count { font-size: 13px; color: #888; margin-bottom: 16px; text-align: center; }
+
+    /* SUBMIT BUTTON */
+    .btn-submit {
+      width: 100%; padding: 16px;
+      background: var(--dark); color: #fff;
+      border: none; border-radius: 2px;
+      font-size: 16px; font-weight: 600; letter-spacing: 0.5px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-submit:hover:not(:disabled) { background: #333; }
+    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* PROGRESS */
+    .progress-wrap { display: none; margin-top: 16px; }
+    .progress-wrap.visible { display: block; }
+    .progress-bar-bg { background: #eee; border-radius: 99px; height: 8px; overflow: hidden; }
+    .progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 0.3s; border-radius: 99px; }
+    .progress-label { font-size: 12px; color: #888; text-align: center; margin-top: 8px; }
+
+    /* SUCCESS */
+    .success-card {
+      display: none; text-align: center; padding: 40px 28px;
+    }
+    .success-card.visible { display: block; }
+    .success-icon { font-size: 56px; margin-bottom: 16px; }
+    .success-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .success-card p { font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 24px; }
+    .btn-more {
+      background: transparent; border: 1.5px solid var(--dark); color: var(--dark);
+      padding: 12px 28px; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 2px;
+    }
+
+    /* GALLERY LINK */
+    .gallery-link {
+      text-align: center; margin-top: 24px;
+      font-size: 13px; color: #888;
+    }
+    .gallery-link a { color: var(--gold); text-decoration: none; font-weight: 600; }
+
+    /* ERROR */
+    .error-msg {
+      background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+      padding: 12px 16px; border-radius: 2px; font-size: 13px;
+      margin-top: 12px; display: none;
+    }
+    .error-msg.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="rings">💍</div>
+  <h1><strong>Sam & Anna</strong></h1>
+  <p>July 4, 2026 · Share Your Photos</p>
+  <div class="gold-rule"></div>
+</header>
+
+<div class="card" id="upload-card">
+  <h2>Share your memories</h2>
+  <p class="sub">Upload photos from tonight and they'll go straight into Sam & Anna's wedding album. Every photo counts! 📸</p>
+
+  <div class="field">
+    <label>Your Name</label>
+    <input type="text" id="uploader-name" placeholder="e.g. Uncle Bob" maxlength="50" autocomplete="name">
+  </div>
+
+  <div class="dropzone" id="dropzone">
+    <input type="file" id="file-input" accept="image/*" multiple>
+    <div class="dropzone-icon">📷</div>
+    <h3>Tap to choose photos</h3>
+    <p>Select one or multiple photos from your camera roll</p>
+  </div>
+
+  <div class="preview-grid" id="preview-grid"></div>
+  <div class="preview-count" id="preview-count"></div>
+
+  <button class="btn-submit" id="submit-btn" disabled>Select photos first</button>
+
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="progress-label" id="progress-label">Uploading...</div>
+  </div>
+
+  <div class="error-msg" id="error-msg"></div>
+</div>
+
+<div class="card success-card" id="success-card">
+  <div class="success-icon">🎉</div>
+  <h2>Photos uploaded!</h2>
+  <p>Thank you so much! Your photos are now part of Sam & Anna's wedding album forever.</p>
+  <button class="btn-more" onclick="resetForm()">Upload more photos</button>
+</div>
+
+<div class="gallery-link">
+  <a href="/gallery">View the live photo gallery →</a>
+</div>
+
+<script>
+  let selectedFiles = [];
+
+  const fileInput = document.getElementById('file-input');
+  const dropzone = document.getElementById('dropzone');
+  const previewGrid = document.getElementById('preview-grid');
+  const previewCount = document.getElementById('preview-count');
+  const submitBtn = document.getElementById('submit-btn');
+  const progressWrap = document.getElementById('progress-wrap');
+  const progressBar = document.getElementById('progress-bar');
+  const progressLabel = document.getElementById('progress-label');
+  const errorMsg = document.getElementById('error-msg');
+  const uploadCard = document.getElementById('upload-card');
+  const successCard = document.getElementById('success-card');
+
+  // Drag & drop
+  dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault(); dropzone.classList.remove('dragover');
+    handleFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+  });
+
+  fileInput.addEventListener('change', () => {
+    handleFiles(Array.from(fileInput.files));
+    fileInput.value = ''; // reset so same files can be re-selected
+  });
+
+  function handleFiles(newFiles) {
+    selectedFiles = [...selectedFiles, ...newFiles].slice(0, 20); // max 20
+    renderPreviews();
+  }
+
+  function renderPreviews() {
+    previewGrid.innerHTML = '';
+    if (selectedFiles.length === 0) {
+      previewGrid.classList.remove('visible');
+      previewCount.textContent = '';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Select photos first';
+      return;
+    }
+
+    previewGrid.classList.add('visible');
+    previewCount.textContent = `${selectedFiles.length} photo${selectedFiles.length !== 1 ? 's' : ''} selected`;
+    submitBtn.disabled = false;
+    submitBtn.textContent = `Upload ${selectedFiles.length} photo${selectedFiles.length !== 1 ? 's' : ''}`;
+
+    selectedFiles.forEach((file, i) => {
+      const item = document.createElement('div');
+      item.className = 'preview-item';
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      const btn = document.createElement('button');
+      btn.className = 'remove';
+      btn.innerHTML = '×';
+      btn.onclick = (e) => { e.stopPropagation(); selectedFiles.splice(i, 1); renderPreviews(); };
+      item.appendChild(img); item.appendChild(btn);
+      previewGrid.appendChild(item);
+    });
+  }
+
+  submitBtn.addEventListener('click', async () => {
+    if (selectedFiles.length === 0) return;
+
+    const name = document.getElementById('uploader-name').value.trim() || 'Guest';
+    const formData = new FormData();
+    formData.append('name', name);
+    selectedFiles.forEach(f => formData.append('photos', f));
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Uploading...';
+    progressWrap.classList.add('visible');
+    errorMsg.classList.remove('visible');
+
+    // Fake progress while uploading (XHR for real progress)
+    const xhr = new XMLHttpRequest();
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        progressBar.style.width = pct + '%';
+        progressLabel.textContent = `Uploading... ${pct}%`;
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      try {
+        const res = JSON.parse(xhr.responseText);
+        if (res.success) {
+          uploadCard.style.display = 'none';
+          successCard.classList.add('visible');
+        } else {
+          showError(res.error || 'Upload failed. Please try again.');
+          resetUploadState();
+        }
+      } catch(e) {
+        showError('Something went wrong. Please try again.');
+        resetUploadState();
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      showError('Connection error. Please check your internet and try again.');
+      resetUploadState();
+    });
+
+    xhr.open('POST', '/upload');
+    xhr.send(formData);
+  });
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.classList.add('visible');
+  }
+
+  function resetUploadState() {
+    submitBtn.disabled = false;
+    submitBtn.textContent = `Upload ${selectedFiles.length} photo${selectedFiles.length !== 1 ? 's' : ''}`;
+    progressWrap.classList.remove('visible');
+    progressBar.style.width = '0%';
+  }
+
+  function resetForm() {
+    selectedFiles = [];
+    renderPreviews();
+    progressWrap.classList.remove('visible');
+    progressBar.style.width = '0%';
+    errorMsg.classList.remove('visible');
+    uploadCard.style.display = 'block';
+    successCard.classList.remove('visible');
+  }
+</script>
+</body>
+</html>
