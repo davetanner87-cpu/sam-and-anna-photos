@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <title>Sam & Anna — Photo Booth</title>
+  <title>Sam & Anna - Photo Booth</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     :root {
@@ -299,7 +299,7 @@
     for (let i = 0; i < TOTAL_SHOTS; i++) {
       currentShot = i;
       updateDots(i);
-      document.getElementById('camera-status').textContent = 
+      document.getElementById('camera-status').textContent =
         i === 0 ? 'Get ready!' : `Shot ${i + 1} of ${TOTAL_SHOTS}`;
       await countdown(COUNTDOWN_SECS);
       await captureShot(i);
@@ -422,7 +422,7 @@
     ctx.font = '300 64px Georgia, serif';
     ctx.fillText('Sam & Anna', W / 2, 68);
 
-    // Gold ampersand — redraw just that character in gold
+    // Gold ampersand - redraw just that character in gold
     // (canvas doesn't do per-char color easily so we do a full redraw trick)
     ctx.fillStyle = '#1a1a1a';
     ctx.font = '300 64px Georgia, serif';
@@ -511,7 +511,7 @@
     ctx.fillStyle = '#aaaaaa';
     ctx.textAlign = 'center';
     ctx.font = 'italic 26px Georgia, serif';
-    ctx.fillText('— something meaningful goes here —', W / 2, footerY + 66);
+    ctx.fillText('- something meaningful goes here -', W / 2, footerY + 66);
 
     return canvas.toDataURL('image/jpeg', 0.95);
   }
@@ -561,7 +561,7 @@
   }
 
   async function printToPrinter(dataUrl) {
-    // Create a hidden iframe and print it — browser print dialog goes to AirPrint/Selphy
+    // Create a hidden iframe and print it - browser print dialog goes to AirPrint/Selphy
     const iframe = document.createElement('iframe');
     iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:4in;height:6in;';
     document.body.appendChild(iframe);
@@ -582,7 +582,7 @@
       </head><body>
       <img src="${dataUrl}">
       </body></html>
-    `);}
+    `);
     iframe.contentDocument.close();
 
     await delay(500);
