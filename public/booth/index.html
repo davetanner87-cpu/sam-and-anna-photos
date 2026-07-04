@@ -397,19 +397,88 @@
     const PHOTO_H = Math.floor((H - PADDING * 4 - 160) / 3); // 160px for footer
     canvas.width = W; canvas.height = H;
 
-    // White background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, W, H);
+    // ── Background ──
+    // Header area (cream)
+    const HEADER_H = 120;
+    const FOOTER_H = 100;
+    ctx.fillStyle = '#faf8f4';
+    ctx.fillRect(0, 0, W, HEADER_H);
+    ctx.fillRect(0, H - FOOTER_H, W, FOOTER_H);
 
-    // Draw 3 photos
+    // Photo area (desaturated sage)
+    ctx.fillStyle = '#424842';
+    ctx.fillRect(0, HEADER_H, W, H - HEADER_H - FOOTER_H);
+
+    // ── Header ──
+    // Divider line under header
+    ctx.strokeStyle = '#e0d8cc';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, HEADER_H);
+    ctx.lineTo(W, HEADER_H);
+    ctx.stroke();
+
+    // Names
+    ctx.fillStyle = '#1a1a1a';
+    ctx.textAlign = 'center';
+    ctx.font = '300 64px Georgia, serif';
+    ctx.fillText('Sam & Anna', W / 2, 68);
+
+    // Gold ampersand — redraw just that character in gold
+    // (canvas doesn't do per-char color easily so we do a full redraw trick)
+    ctx.fillStyle = '#1a1a1a';
+    ctx.font = '300 64px Georgia, serif';
+    // Measure to position
+    const samW = ctx.measureText('Sam ').width;
+    const ampW = ctx.measureText('& ').width;
+    const fullW = ctx.measureText('Sam & Anna').width;
+    const startX = W/2 - fullW/2;
+    ctx.fillText('Sam ', startX, 68, samW + 10);
+    ctx.fillStyle = '#c9a84c';
+    ctx.fillText('&', startX + samW, 68);
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillText(' Anna', startX + samW + ampW, 68);
+
+    // Date
+    ctx.fillStyle = '#999999';
+    ctx.font = '28px Helvetica Neue, Arial, sans-serif';
+    ctx.letterSpacing = '8px';
+    ctx.fillText('6/26/26', W / 2, 98);
+
+    // Gold rule under date
+    ctx.strokeStyle = '#c9a84c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(W/2 - 50, 110);
+    ctx.lineTo(W/2 + 50, 110);
+    ctx.stroke();
+
+    // ── Corner ornaments ──
+    ctx.fillStyle = 'rgba(201,168,76,0.35)';
+    ctx.font = '28px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('✦', 20, 48);
+    ctx.textAlign = 'right';
+    ctx.fillText('✦', W - 20, 48);
+    ctx.textAlign = 'left';
+    ctx.fillText('✦', 20, H - 20);
+    ctx.textAlign = 'right';
+    ctx.fillText('✦', W - 20, H - 20);
+
+    // ── Photos ──
+    const PHOTO_AREA_TOP = HEADER_H;
+    const PHOTO_AREA_H = H - HEADER_H - FOOTER_H;
+    const PHOTO_PAD = 20;
+    const PHOTO_W2 = W - PHOTO_PAD * 2;
+    const PHOTO_H2 = Math.floor((PHOTO_AREA_H - PHOTO_PAD * 4) / 3);
+
     for (let i = 0; i < 3; i++) {
       const img = new Image();
       img.src = capturedPhotos[i];
       await new Promise(r => { img.onload = r; });
-      const y = PADDING + i * (PHOTO_H + PADDING);
-      // Cover crop to fit
+      const y = PHOTO_AREA_TOP + PHOTO_PAD + i * (PHOTO_H2 + PHOTO_PAD);
       const srcAspect = img.width / img.height;
-      const dstAspect = PHOTO_W / PHOTO_H;
+      const dstAspect = PHOTO_W2 / PHOTO_H2;
       let sx = 0, sy = 0, sw = img.width, sh = img.height;
       if (srcAspect > dstAspect) {
         sw = img.height * dstAspect;
@@ -418,35 +487,33 @@
         sh = img.width / dstAspect;
         sy = (img.height - sh) / 2;
       }
-      ctx.drawImage(img, sx, sy, sw, sh, PADDING, y, PHOTO_W, PHOTO_H);
+      ctx.drawImage(img, sx, sy, sw, sh, PHOTO_PAD, y, PHOTO_W2, PHOTO_H2);
     }
 
-    // Footer area
-    const footerY = H - 160;
+    // ── Footer ──
+    const footerY = H - FOOTER_H;
 
-    // Gold divider line
+    // Divider line above footer
+    ctx.strokeStyle = '#e0d8cc';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, footerY);
+    ctx.lineTo(W, footerY);
+    ctx.stroke();
+
+    // Gold rule
     ctx.strokeStyle = '#c9a84c';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(PADDING, footerY + 10);
-    ctx.lineTo(W - PADDING, footerY + 10);
+    ctx.moveTo(W/2 - 40, footerY + 22);
+    ctx.lineTo(W/2 + 40, footerY + 22);
     ctx.stroke();
 
-    // Names
-    ctx.fillStyle = '#1a1a1a';
+    // Footer text placeholder
+    ctx.fillStyle = '#aaaaaa';
     ctx.textAlign = 'center';
-    ctx.font = 'bold 52px Georgia, serif';
-    ctx.fillText('Sam & Anna', W / 2, footerY + 66);
-
-    // Wedding date
-    ctx.fillStyle = '#888888';
-    ctx.font = '24px Helvetica Neue, sans-serif';
-    ctx.fillText('MARRIED · JUNE 26, 2026 · CALIFORNIA', W / 2, footerY + 104);
-
-    // Reception date
-    ctx.fillStyle = '#c9a84c';
-    ctx.font = '24px Helvetica Neue, sans-serif';
-    ctx.fillText('RECEPTION · JULY 4, 2026 · PARK CITY, UTAH', W / 2, footerY + 136);
+    ctx.font = 'italic 26px Georgia, serif';
+    ctx.fillText('— something meaningful goes here —', W / 2, footerY + 66);
 
     return canvas.toDataURL('image/jpeg', 0.95);
   }
