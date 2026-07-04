@@ -236,6 +236,36 @@ app.get('/qr', async (req, res) => {
   }
 });
 
+// ─── Print endpoint ─────────────────────────────────────────────
+let lastBoothStrip = null;
+
+app.post('/booth-strip', upload.single('strip'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file' });
+  lastBoothStrip = { path: req.file.path, mime: req.file.mimetype };
+  res.json({ success: true, url: '/print/latest' });
+});
+
+app.get('/print/latest', (req, res) => {
+  if (!lastBoothStrip) return res.status(404).send('No strip yet');
+  res.send(`<!DOCTYPE html><html><head>
+    <style>
+      * { margin:0; padding:0; }
+      @page { size: 4in 6in; margin: 0; }
+      html, body { width:4in; height:6in; background:#000; overflow:hidden; }
+      img { width:4in; height:6in; display:block; object-fit:fill; }
+    </style>
+    <script>window.onload = function() { window.print(); }<\/script>
+  </head><body>
+  <img src="/print/latest-img">
+  </body></html>`);
+});
+
+app.get('/print/latest-img', (req, res) => {
+  if (!lastBoothStrip) return res.status(404).send('No strip yet');
+  res.setHeader('Content-Type', lastBoothStrip.mime);
+  res.sendFile(lastBoothStrip.path);
+});
+
 // ─── Serve HTML pages ────────────────────────────────────────────
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/gallery', (req, res) => res.sendFile(path.join(__dirname, 'public', 'gallery.html')));
