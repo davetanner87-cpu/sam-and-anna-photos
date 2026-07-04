@@ -242,8 +242,8 @@
 <!-- DONE -->
 <div class="screen" id="screen-done">
   <div class="done-icon">🎉</div>
-  <h2>Enjoy your<br><strong>print!</strong></h2>
-  <p>Your photos are also saved to Sam & Anna's album</p>
+  <h2>Your photo<br><strong>is ready!</strong></h2>
+  <p>Open the downloaded photo and print from your Photos app 📲</p>
   <button onclick="reprint()" style="margin-top:24px;background:var(--gold);color:#000;font-size:16px;font-weight:800;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:999px;padding:16px 40px;cursor:pointer;">🖨️ Print Another Copy</button>
   <div class="countdown-reset" style="margin-top:20px;">Starting over in <span id="reset-countdown">10</span>s</div>
 </div>
@@ -299,7 +299,7 @@
     for (let i = 0; i < TOTAL_SHOTS; i++) {
       currentShot = i;
       updateDots(i);
-      document.getElementById('camera-status').textContent = 
+      document.getElementById('camera-status').textContent =
         i === 0 ? 'Get ready!' : `Shot ${i + 1} of ${TOTAL_SHOTS}`;
       await countdown(i === 0 ? 10 : COUNTDOWN_SECS);
       await captureShot(i);
@@ -390,79 +390,74 @@
 
     // 4x6 at 300dpi = 1200x1800px
     const W = 1200, H = 1800;
-    const PADDING = 30;
-    const PHOTO_W = W - (PADDING * 2);
-    const PHOTO_H = Math.floor((H - PADDING * 4 - 160) / 3); // 160px for footer
     canvas.width = W; canvas.height = H;
 
-    // ── Background ──
-    // Header area (cream)
-    const HEADER_H = 120;
-    const FOOTER_H = 100;
+    const HEADER_H = 200;
+    const FOOTER_H = 160;
+    const PHOTO_PAD = 24;
+    const PHOTO_AREA_TOP = HEADER_H;
+    const PHOTO_AREA_H = H - HEADER_H - FOOTER_H;
+    const PHOTO_W2 = W;
+    const PHOTO_H2 = Math.floor((PHOTO_AREA_H - PHOTO_PAD * 4) / 3);
+
+    // ── Full background: sage ──
+    ctx.fillStyle = '#424842';
+    ctx.fillRect(0, 0, W, H);
+
+    // ── Header (cream) ──
     ctx.fillStyle = '#faf8f4';
     ctx.fillRect(0, 0, W, HEADER_H);
+
+    // ── Footer (cream) ──
+    ctx.fillStyle = '#faf8f4';
     ctx.fillRect(0, H - FOOTER_H, W, FOOTER_H);
 
-    // Photo area (desaturated sage)
-    ctx.fillStyle = '#424842';
-    ctx.fillRect(0, HEADER_H, W, H - HEADER_H - FOOTER_H);
-
-    // ── Header ──
-    // Divider line under header
+    // Header bottom border
     ctx.strokeStyle = '#e0d8cc';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(0, HEADER_H);
     ctx.lineTo(W, HEADER_H);
     ctx.stroke();
 
-    // Names - draw each part separately for gold ampersand
-    ctx.font = '400 64px Georgia, serif';
+    // Footer top border
+    ctx.beginPath();
+    ctx.moveTo(0, H - FOOTER_H);
+    ctx.lineTo(W, H - FOOTER_H);
+    ctx.stroke();
+
+    // ── Header text ──
+    ctx.textAlign = 'center';
+    ctx.font = '400 90px Georgia, serif';
+    // Measure for gold ampersand
     const samW = ctx.measureText('Sam ').width;
     const ampW = ctx.measureText('& ').width;
     const fullW = ctx.measureText('Sam & Anna').width;
+    const nameY = 120;
     const startX = W/2 - fullW/2;
     ctx.textAlign = 'left';
     ctx.fillStyle = '#1a1a1a';
-    ctx.fillText('Sam ', startX, 68);
+    ctx.fillText('Sam ', startX, nameY);
     ctx.fillStyle = '#c9a84c';
-    ctx.fillText('&', startX + samW, 68);
+    ctx.fillText('&', startX + samW, nameY);
     ctx.fillStyle = '#1a1a1a';
-    ctx.fillText(' Anna', startX + samW + ampW, 68);
+    ctx.fillText(' Anna', startX + samW + ampW, nameY);
+
+    // Gold rule
+    ctx.strokeStyle = '#c9a84c';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(W/2 - 60, 148);
+    ctx.lineTo(W/2 + 60, 148);
+    ctx.stroke();
 
     // Date
     ctx.fillStyle = '#999999';
-    ctx.font = '28px Helvetica Neue, Arial, sans-serif';
-    ctx.letterSpacing = '8px';
-    ctx.fillText('6/26/26', W / 2, 98);
-
-    // Gold rule under date
-    ctx.strokeStyle = '#c9a84c';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(W/2 - 50, 110);
-    ctx.lineTo(W/2 + 50, 110);
-    ctx.stroke();
-
-    // ── Corner ornaments ──
-    ctx.fillStyle = 'rgba(201,168,76,0.35)';
-    ctx.font = '28px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('✦', 20, 48);
-    ctx.textAlign = 'right';
-    ctx.fillText('✦', W - 20, 48);
-    ctx.textAlign = 'left';
-    ctx.fillText('✦', 20, H - 20);
-    ctx.textAlign = 'right';
-    ctx.fillText('✦', W - 20, H - 20);
+    ctx.textAlign = 'center';
+    ctx.font = '400 48px Helvetica Neue, Arial, sans-serif';
+    ctx.fillText('6/26/26', W/2, 186);
 
     // ── Photos ──
-    const PHOTO_AREA_TOP = HEADER_H;
-    const PHOTO_AREA_H = H - HEADER_H - FOOTER_H;
-    const PHOTO_PAD = 20;
-    const PHOTO_W2 = W - PHOTO_PAD * 2;
-    const PHOTO_H2 = Math.floor((PHOTO_AREA_H - PHOTO_PAD * 4) / 3);
-
     for (let i = 0; i < 3; i++) {
       const img = new Image();
       img.src = capturedPhotos[i];
@@ -478,33 +473,34 @@
         sh = img.width / dstAspect;
         sy = (img.height - sh) / 2;
       }
-      ctx.drawImage(img, sx, sy, sw, sh, PHOTO_PAD, y, PHOTO_W2, PHOTO_H2);
+      ctx.drawImage(img, sx, sy, sw, sh, 0, y, PHOTO_W2, PHOTO_H2);
     }
 
-    // ── Footer ──
+    // ── Footer text ──
     const footerY = H - FOOTER_H;
-
-    // Divider line above footer
-    ctx.strokeStyle = '#e0d8cc';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, footerY);
-    ctx.lineTo(W, footerY);
-    ctx.stroke();
-
-    // Gold rule
     ctx.strokeStyle = '#c9a84c';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(W/2 - 40, footerY + 22);
-    ctx.lineTo(W/2 + 40, footerY + 22);
+    ctx.moveTo(W/2 - 50, footerY + 36);
+    ctx.lineTo(W/2 + 50, footerY + 36);
     ctx.stroke();
 
-    // Footer text placeholder
     ctx.fillStyle = '#aaaaaa';
     ctx.textAlign = 'center';
-    ctx.font = 'italic 26px Georgia, serif';
-    ctx.fillText('- something meaningful goes here -', W / 2, footerY + 66);
+    ctx.font = 'italic 36px Georgia, serif';
+    ctx.fillText('— something meaningful goes here —', W/2, footerY + 100);
+
+    // Corner ornaments
+    ctx.fillStyle = 'rgba(201,168,76,0.4)';
+    ctx.font = '36px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('✦', 24, 60);
+    ctx.textAlign = 'right';
+    ctx.fillText('✦', W - 24, 60);
+    ctx.textAlign = 'left';
+    ctx.fillText('✦', 24, H - 24);
+    ctx.textAlign = 'right';
+    ctx.fillText('✦', W - 24, H - 24);
 
     return canvas.toDataURL('image/jpeg', 0.95);
   }
@@ -545,7 +541,7 @@
       console.error('Print error:', err);
     }
 
-    setTimeout(showDone, 47000);
+    showDone();
   }
 
   async function reprint() {
@@ -554,34 +550,14 @@
   }
 
   async function printToPrinter(dataUrl) {
-    // Create a hidden iframe and print it - browser print dialog goes to AirPrint/Selphy
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:4in;height:6in;';
-    document.body.appendChild(iframe);
-
-    iframe.contentDocument.open();
-    iframe.contentDocument.write(`
-      <!DOCTYPE html><html><head>
-      <style>
-        * { margin:0; padding:0; }
-        @page { size: 4in 6in; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        html, body { width:4in; height:6in; overflow:hidden; }
-        img { width:4in; height:6in; object-fit:fill; display:block; }
-      </style>
-      <script>
-        // Remove browser print headers/footers not possible via CSS alone
-        // but @page margin:0 handles most browsers
-      <\/script>
-      </head><body>
-      <img src="${dataUrl}">
-      </body></html>
-    `);
-    iframe.contentDocument.close();
-
-    await delay(500);
-    iframe.contentWindow.print();
-
-    setTimeout(() => document.body.removeChild(iframe), 5000);
+    // Download the strip as a JPG - open in Photos app and print from there
+    // This avoids browser print headers/footers entirely
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'sam-and-anna-booth.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   // ── Done screen ────────────────────────────────────
