@@ -8,6 +8,10 @@
   <title>Sam & Anna - Photo Booth</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    @media print {
+      * { visibility: hidden !important; }
+      #print-image { visibility: visible !important; position: fixed; inset: 0; width: 100%; height: 100%; object-fit: fill; display: block !important; }
+    }
     :root {
       --gold: #c9a84c;
       --gold-light: #e8c96a;
@@ -542,7 +546,9 @@
 
   async function shareStrip() {
     if (!lastStripDataUrl) return;
-    printImage(lastStripDataUrl);
+    await printImage(lastStripDataUrl);
+    // Auto-reset to done screen after print is triggered
+    setTimeout(showDone, 3000);
   }
 
   async function reprint() {
