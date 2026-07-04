@@ -231,20 +231,22 @@
   </div>
 </div>
 
-<!-- PRINTING -->
-<div class="screen" id="screen-printing">
-  <div class="printing-icon">🖨️</div>
-  <h2>Printing your photos...</h2>
-  <p>About 45 seconds</p>
-  <div class="print-progress"><div class="print-progress-bar" id="print-bar"></div></div>
+<!-- PRINT SCREEN -->
+<div class="screen" id="screen-print">
+  <img id="strip-fullscreen" src="" style="max-height:80vh;max-width:100%;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,0.6);">
+  <div style="margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+    <p style="color:#fff;font-size:14px;letter-spacing:2px;text-transform:uppercase;text-align:center;">Tap Share → Canon PRINT to print</p>
+    <button onclick="shareStrip()" style="background:var(--gold);color:#000;font-size:20px;font-weight:800;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:999px;padding:20px 56px;cursor:pointer;">📤 Share to Print</button>
+    <button onclick="showDone()" style="background:transparent;color:#555;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;border:1px solid #333;border-radius:999px;padding:12px 32px;cursor:pointer;">Already Printed ✓</button>
+    <button onclick="reprint()" style="background:transparent;color:#555;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;border:1px solid #333;border-radius:999px;padding:12px 32px;cursor:pointer;">🖨️ Print Another Copy</button>
+  </div>
 </div>
 
 <!-- DONE -->
 <div class="screen" id="screen-done">
   <div class="done-icon">🎉</div>
-  <h2>Your photo<br><strong>is ready!</strong></h2>
-  <p>Open the downloaded photo and print from your Photos app 📲</p>
-  <button onclick="reprint()" style="margin-top:24px;background:var(--gold);color:#000;font-size:16px;font-weight:800;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:999px;padding:16px 40px;cursor:pointer;">🖨️ Print Another Copy</button>
+  <h2>Enjoy your<br><strong>print!</strong></h2>
+  <p>Your photos are saved to Sam &amp; Anna's album 📸</p>
   <div class="countdown-reset" style="margin-top:20px;">Starting over in <span id="reset-countdown">10</span>s</div>
 </div>
 
@@ -392,8 +394,8 @@
     const W = 1200, H = 1800;
     canvas.width = W; canvas.height = H;
 
-    const HEADER_H = 200;
-    const FOOTER_H = 160;
+    const HEADER_H = 220;
+    const FOOTER_H = 180;
     const PHOTO_PAD = 24;
     const PHOTO_AREA_TOP = HEADER_H;
     const PHOTO_AREA_H = H - HEADER_H - FOOTER_H;
@@ -433,7 +435,7 @@
     const samW = ctx.measureText('Sam ').width;
     const ampW = ctx.measureText('& ').width;
     const fullW = ctx.measureText('Sam & Anna').width;
-    const nameY = 120;
+    const nameY = 136;
     const startX = W/2 - fullW/2;
     ctx.textAlign = 'left';
     ctx.fillStyle = '#1a1a1a';
@@ -447,15 +449,15 @@
     ctx.strokeStyle = '#c9a84c';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(W/2 - 60, 148);
-    ctx.lineTo(W/2 + 60, 148);
+    ctx.moveTo(W/2 - 60, 164);
+    ctx.lineTo(W/2 + 60, 164);
     ctx.stroke();
 
     // Date
     ctx.fillStyle = '#999999';
     ctx.textAlign = 'center';
     ctx.font = '400 48px Helvetica Neue, Arial, sans-serif';
-    ctx.fillText('6/26/26', W/2, 186);
+    ctx.fillText('6/26/26', W/2, 202);
 
     // ── Photos ──
     for (let i = 0; i < 3; i++) {
@@ -481,14 +483,14 @@
     ctx.strokeStyle = '#c9a84c';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(W/2 - 50, footerY + 36);
-    ctx.lineTo(W/2 + 50, footerY + 36);
+    ctx.moveTo(W/2 - 50, footerY + 44);
+    ctx.lineTo(W/2 + 50, footerY + 44);
     ctx.stroke();
 
     ctx.fillStyle = '#aaaaaa';
     ctx.textAlign = 'center';
     ctx.font = 'italic 36px Georgia, serif';
-    ctx.fillText('— something meaningful goes here —', W/2, footerY + 100);
+    ctx.fillText('— something meaningful goes here —', W/2, footerY + 112);
 
     // Corner ornaments
     ctx.fillStyle = 'rgba(201,168,76,0.4)';
@@ -528,36 +530,39 @@
   let lastStripDataUrl = null;
 
   async function printStrip() {
-    showScreen('printing');
-    const bar = document.getElementById('print-bar');
-    bar.style.animation = 'none'; bar.offsetHeight;
-    bar.style.animation = 'printProgress 45s linear forwards';
-
     try {
       lastStripDataUrl = await buildStrip();
       uploadToDrive(lastStripDataUrl); // fire and forget
-      await printToPrinter(lastStripDataUrl);
+      document.getElementById('strip-fullscreen').src = lastStripDataUrl;
+      showScreen('print');
     } catch (err) {
       console.error('Print error:', err);
+      showDone();
     }
+  }
 
-    showDone();
+  async function shareStrip() {
+    if (!lastStripDataUrl) return;
+    try {
+      const blob = await (await fetch(lastStripDataUrl)).blob();
+      const file = new File([blob], 'sam-and-anna-booth.jpg', { type: 'image/jpeg' });
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Sam & Anna Photo Booth'
+        });
+      } else {
+        // Fallback: open image in new tab so user can long-press save/print
+        window.open(lastStripDataUrl, '_blank');
+      }
+    } catch(err) {
+      if (err.name !== 'AbortError') console.error('Share error:', err);
+    }
   }
 
   async function reprint() {
     if (!lastStripDataUrl) return;
-    await printToPrinter(lastStripDataUrl);
-  }
-
-  async function printToPrinter(dataUrl) {
-    // Download the strip as a JPG - open in Photos app and print from there
-    // This avoids browser print headers/footers entirely
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = 'sam-and-anna-booth.jpg';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    await shareStrip();
   }
 
   // ── Done screen ────────────────────────────────────
