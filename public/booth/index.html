@@ -299,9 +299,9 @@
     for (let i = 0; i < TOTAL_SHOTS; i++) {
       currentShot = i;
       updateDots(i);
-      document.getElementById('camera-status').textContent =
+      document.getElementById('camera-status').textContent = 
         i === 0 ? 'Get ready!' : `Shot ${i + 1} of ${TOTAL_SHOTS}`;
-      await countdown(COUNTDOWN_SECS);
+      await countdown(i === 0 ? 10 : COUNTDOWN_SECS);
       await captureShot(i);
       if (i < TOTAL_SHOTS - 1) await delay(800);
     }
@@ -416,22 +416,15 @@
     ctx.lineTo(W, HEADER_H);
     ctx.stroke();
 
-    // Names
-    ctx.fillStyle = '#1a1a1a';
-    ctx.textAlign = 'center';
-    ctx.font = '300 64px Georgia, serif';
-    ctx.fillText('Sam & Anna', W / 2, 68);
-
-    // Gold ampersand - redraw just that character in gold
-    // (canvas doesn't do per-char color easily so we do a full redraw trick)
-    ctx.fillStyle = '#1a1a1a';
-    ctx.font = '300 64px Georgia, serif';
-    // Measure to position
+    // Names - draw each part separately for gold ampersand
+    ctx.font = '400 64px Georgia, serif';
     const samW = ctx.measureText('Sam ').width;
     const ampW = ctx.measureText('& ').width;
     const fullW = ctx.measureText('Sam & Anna').width;
     const startX = W/2 - fullW/2;
-    ctx.fillText('Sam ', startX, 68, samW + 10);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillText('Sam ', startX, 68);
     ctx.fillStyle = '#c9a84c';
     ctx.fillText('&', startX + samW, 68);
     ctx.fillStyle = '#1a1a1a';
