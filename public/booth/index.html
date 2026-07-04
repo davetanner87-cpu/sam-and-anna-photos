@@ -32,17 +32,17 @@
     .screen.active { opacity: 1; pointer-events: all; }
 
     /* ── IDLE SCREEN ─────────────────────────────── */
-    #screen-idle { background: var(--dark); text-align: center; padding: 40px; }
-    .idle-rings { font-size: 72px; margin-bottom: 24px; animation: float 3s ease-in-out infinite; }
+    #screen-idle { background: var(--dark); text-align: center; padding: 20px; overflow: hidden; }
+    .idle-rings { font-size: 60px; margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
     .idle-title { font-size: 52px; font-weight: 400; color: #fff; letter-spacing: 3px; line-height: 1.1; margin-bottom: 12px; }
     .idle-title strong { font-weight: 400; display: inline; }
-    .idle-dates { margin: 24px auto; }
+    .idle-dates { margin: 12px auto; }
     .idle-date-row { font-size: 13px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin: 6px 0; }
     .idle-date-row span { color: #555; }
-    .gold-rule { width: 60px; height: 2px; background: var(--gold); margin: 24px auto; }
+    .gold-rule { width: 60px; height: 2px; background: var(--gold); margin: 12px auto; }
     .tap-btn {
-      margin-top: 32px;
+      margin-top: 16px;
       background: var(--gold); color: #000;
       font-size: 22px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
       border: none; border-radius: 999px;
