@@ -26,9 +26,16 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_REDIRECT_URI
 );
 
-// If we have a stored token, load it
-const TOKEN_PATH = path.join(__dirname, '.token.json');
-if (fs.existsSync(TOKEN_PATH)) {
+// Load token from env var (persists across deploys) or fall back to file
+const TOKEN_PATH = path.join('/tmp', '.token.json');
+if (process.env.GOOGLE_OAUTH_TOKEN) {
+  try {
+    const token = JSON.parse(process.env.GOOGLE_OAUTH_TOKEN);
+    oauth2Client.setCredentials(token);
+    // Also write to tmp so file-based checks work
+    fs.writeFileSync(TOKEN_PATH, JSON.stringify(token));
+  } catch(e) { console.error('Failed to parse GOOGLE_OAUTH_TOKEN:', e.message); }
+} else if (fs.existsSync(TOKEN_PATH)) {
   const token = JSON.parse(fs.readFileSync(TOKEN_PATH));
   oauth2Client.setCredentials(token);
 }
@@ -57,6 +64,8 @@ app.get('/auth/callback', async (req, res) => {
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
     fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens));
+    // Show the token so it can be saved as GOOGLE_OAUTH_TOKEN env var
+    console.log('OAUTH TOKEN (save as GOOGLE_OAUTH_TOKEN env var):', JSON.stringify(tokens));
     res.redirect('/admin');
   } catch (err) {
     console.error('Auth error:', err);
@@ -163,7 +172,7 @@ app.get('/gallery-data', async (req, res) => {
 
 // ─── Admin Route ─────────────────────────────────────────────────
 app.get('/admin', (req, res) => {
-  const isAuthed = fs.existsSync(TOKEN_PATH);
+  const isAuthed = fs.existsSync(TOKEN_PATH) || !!process.env.GOOGLE_OAUTH_TOKEN;
   res.send(`
     <!DOCTYPE html>
     <html>
