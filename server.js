@@ -192,13 +192,13 @@ app.get('/admin', (req, res) => {
       ${!isAuthed ? `<a href="/auth" class="btn">Connect Google Drive</a>` : ''}
 
       <h3>Share Link</h3>
-      <div class="url">${process.env.APP_URL || 'http://localhost:3000'}/</div>
+      <div class="url">${process.env.APP_URL || 'https://sam-and-anna-photos.onrender.com'}/</div>
       
       <h3>Gallery</h3>
-      <div class="url">${process.env.APP_URL || 'http://localhost:3000'}/gallery</div>
+      <div class="url">${process.env.APP_URL || 'https://sam-and-anna-photos.onrender.com'}/gallery</div>
 
       <h3>QR Code</h3>
-      <div class="url">${process.env.APP_URL || 'http://localhost:3000'}/qr</div>
+      <div class="url">${process.env.APP_URL || 'https://sam-and-anna-photos.onrender.com'}/qr</div>
 
       <br>
       <a href="/" class="btn">View Upload Page</a>
@@ -212,7 +212,7 @@ app.get('/admin', (req, res) => {
 // ─── QR Code Route ───────────────────────────────────────────────
 app.get('/qr', async (req, res) => {
   const QRCode = require('qrcode');
-  const appUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`;
+  const appUrl = process.env.APP_URL || 'https://sam-and-anna-photos.onrender.com';
   try {
     const qrBuffer = await QRCode.toBuffer(appUrl, {
       width: 400,
