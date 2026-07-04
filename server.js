@@ -248,15 +248,27 @@ app.post('/booth-strip', upload.single('strip'), async (req, res) => {
 app.get('/print/latest', (req, res) => {
   if (!lastBoothStrip) return res.status(404).send('No strip yet');
   res.send(`<!DOCTYPE html><html><head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-      * { margin:0; padding:0; }
+      * { margin:0; padding:0; box-sizing:border-box; }
       @page { size: 4in 6in; margin: 0; }
-      html, body { width:4in; height:6in; background:#000; overflow:hidden; }
-      img { width:4in; height:6in; display:block; object-fit:fill; }
+      body { background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; }
+      #strip { width:4in; height:6in; display:block; object-fit:fill; }
+      #controls { margin-top:20px; display:flex; gap:12px; }
+      button { background:#c9a84c; color:#000; font-size:18px; font-weight:800; letter-spacing:2px; text-transform:uppercase; border:none; border-radius:999px; padding:16px 40px; cursor:pointer; }
+      .back { background:transparent; color:#555; border:1px solid #333; font-size:13px; }
+      @media print {
+        #controls { display:none !important; }
+        body { display:block; }
+        #strip { width:100%; height:100%; position:fixed; inset:0; }
+      }
     </style>
-    <script>window.onload = function() { window.print(); }<\/script>
   </head><body>
-  <img src="/print/latest-img">
+  <img id="strip" src="/print/latest-img">
+  <div id="controls">
+    <button onclick="window.print()">\uD83D\uDDA8\uFE0F Print</button>
+    <button class="back" onclick="window.location.href='/booth/'">\u2190 Back to Booth</button>
+  </div>
   </body></html>`);
 });
 

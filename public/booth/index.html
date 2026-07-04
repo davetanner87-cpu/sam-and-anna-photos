@@ -560,11 +560,16 @@
   }
 
   async function printImage(dataUrl) {
-    // Set the hidden print image and trigger window.print()
-    // @media print CSS hides everything except the image
-    document.getElementById('print-image').src = dataUrl;
-    await delay(300);
-    window.print();
+    // Upload strip to server, navigate THIS page to print URL
+    // so only the image exists when print dialog fires
+    const blob = await (await fetch(dataUrl)).blob();
+    const formData = new FormData();
+    formData.append('strip', blob, 'strip.jpg');
+    const res = await fetch('/booth-strip', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    }
   }
 
   // ── Done screen ────────────────────────────────────
