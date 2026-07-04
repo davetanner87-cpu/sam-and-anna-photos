@@ -35,8 +35,8 @@
     #screen-idle { background: var(--dark); text-align: center; padding: 40px; }
     .idle-rings { font-size: 72px; margin-bottom: 24px; animation: float 3s ease-in-out infinite; }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-    .idle-title { font-size: 52px; font-weight: 200; color: #fff; letter-spacing: 3px; line-height: 1.1; margin-bottom: 12px; }
-    .idle-title strong { font-weight: 800; display: block; }
+    .idle-title { font-size: 52px; font-weight: 400; color: #fff; letter-spacing: 3px; line-height: 1.1; margin-bottom: 12px; }
+    .idle-title strong { font-weight: 400; display: inline; }
     .idle-dates { margin: 24px auto; }
     .idle-date-row { font-size: 13px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin: 6px 0; }
     .idle-date-row span { color: #555; }
@@ -187,11 +187,10 @@
 <!-- IDLE -->
 <div class="screen active" id="screen-idle">
   <div class="idle-rings">💍</div>
-  <div class="idle-title">Sam <span style="color:var(--gold);font-weight:300">&</span> <strong>Anna</strong></div>
+  <div class="idle-title">Sam <span style="color:var(--gold)">&</span> Anna</div>
   <div class="gold-rule"></div>
   <div class="idle-dates">
-    <div class="idle-date-row">Sam <span>·</span> &amp; <span>·</span> Anna</div>
-    <div class="idle-date-row">6/26/26 <span>·</span> Park City, Utah</div>
+    <div class="idle-date-row">6/26/26</div>
   </div>
   <button class="tap-btn" onclick="startBooth()">TAP TO START</button>
   <div class="idle-sub">3 photos · instant print</div>
