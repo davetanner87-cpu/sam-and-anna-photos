@@ -246,7 +246,8 @@
   <div class="done-icon">🎉</div>
   <h2>Enjoy your<br><strong>print!</strong></h2>
   <p>Your photos are also saved to Sam & Anna's album</p>
-  <div class="countdown-reset">Starting over in <span id="reset-countdown">10</span>s</div>
+  <button onclick="reprint()" style="margin-top:24px;background:var(--gold);color:#000;font-size:16px;font-weight:800;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:999px;padding:16px 40px;cursor:pointer;">🖨️ Print Another Copy</button>
+  <div class="countdown-reset" style="margin-top:20px;">Starting over in <span id="reset-countdown">10</span>s</div>
 </div>
 
 <!-- Hidden canvas for compositing the strip -->
@@ -450,36 +451,48 @@
     return canvas.toDataURL('image/jpeg', 0.95);
   }
 
+  // ── Upload individual photos + strip to Drive ────────
+  async function uploadToDrive(stripDataUrl) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const formData = new FormData();
+    formData.append('name', 'Photo Booth');
+
+    // Upload 3 individual photos
+    for (let i = 0; i < capturedPhotos.length; i++) {
+      const blob = await (await fetch(capturedPhotos[i])).blob();
+      formData.append('photos', blob, `booth-${timestamp}-photo${i+1}.jpg`);
+    }
+
+    // Also upload the composite strip
+    const stripBlob = await (await fetch(stripDataUrl)).blob();
+    formData.append('photos', stripBlob, `booth-${timestamp}-strip.jpg`);
+
+    fetch('/upload', { method: 'POST', body: formData }).catch(console.error);
+  }
+
   // ── Print ──────────────────────────────────────────
+  let lastStripDataUrl = null;
+
   async function printStrip() {
     showScreen('printing');
-    // Reset progress bar animation
     const bar = document.getElementById('print-bar');
     bar.style.animation = 'none'; bar.offsetHeight;
     bar.style.animation = 'printProgress 45s linear forwards';
 
     try {
-      const stripDataUrl = await buildStrip();
-
-      // Upload to server (which handles Drive + print)
-      const blob = await (await fetch(stripDataUrl)).blob();
-      const formData = new FormData();
-      formData.append('photos', blob, 'booth-strip.jpg');
-      formData.append('name', 'Photo Booth');
-      formData.append('type', 'booth');
-
-      // Fire and forget upload — don't block the print experience
-      fetch('/upload', { method: 'POST', body: formData }).catch(console.error);
-
-      // Send to printer
-      await printToPrinter(stripDataUrl);
-
+      lastStripDataUrl = await buildStrip();
+      uploadToDrive(lastStripDataUrl); // fire and forget
+      await printToPrinter(lastStripDataUrl);
     } catch (err) {
       console.error('Print error:', err);
     }
 
-    // Show done after ~47s (print time)
     setTimeout(showDone, 47000);
+  }
+
+  async function reprint() {
+    if (!lastStripDataUrl) return;
+    await printToPrinter(lastStripDataUrl);
   }
 
   async function printToPrinter(dataUrl) {
@@ -493,13 +506,18 @@
       <!DOCTYPE html><html><head>
       <style>
         * { margin:0; padding:0; }
-        @page { size: 4in 6in; margin: 0; }
-        body { width:4in; height:6in; }
-        img { width:4in; height:6in; object-fit:cover; display:block; }
-      </style></head><body>
+        @page { size: 4in 6in; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        html, body { width:4in; height:6in; overflow:hidden; }
+        img { width:4in; height:6in; object-fit:fill; display:block; }
+      </style>
+      <script>
+        // Remove browser print headers/footers not possible via CSS alone
+        // but @page margin:0 handles most browsers
+      <\/script>
+      </head><body>
       <img src="${dataUrl}">
       </body></html>
-    `);
+    `);}
     iframe.contentDocument.close();
 
     await delay(500);
