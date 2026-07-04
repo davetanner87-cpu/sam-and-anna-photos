@@ -128,6 +128,7 @@
     .gallery-link {
       text-align: center; margin-top: 24px;
       font-size: 13px; color: #888;
+      display: none;
     }
     .gallery-link a { color: var(--gold); text-decoration: none; font-weight: 600; }
 
@@ -173,6 +174,7 @@
   <div class="progress-wrap" id="progress-wrap">
     <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
     <div class="progress-label" id="progress-label">Uploading...</div>
+    <div style="font-size:12px;color:#999;text-align:center;margin-top:8px;">⚠️ Please keep this page open until the upload completes</div>
   </div>
 
   <div class="error-msg" id="error-msg"></div>
@@ -183,6 +185,7 @@
   <h2>Photos uploaded!</h2>
   <p>Thank you so much! Your photos are now part of Sam & Anna's wedding album forever.</p>
   <button class="btn-more" onclick="resetForm()">Upload more photos</button>
+  <div style="margin-top:20px;font-size:13px;color:#888;"><a href="/gallery" style="color:var(--gold);text-decoration:none;font-weight:600;">View the live photo gallery →</a></div>
 </div>
 
 <div class="gallery-link">
@@ -255,48 +258,42 @@
     if (selectedFiles.length === 0) return;
 
     const name = document.getElementById('uploader-name').value.trim() || 'Guest';
-    const formData = new FormData();
-    formData.append('name', name);
-    selectedFiles.forEach(f => formData.append('photos', f));
+    const total = selectedFiles.length;
+    let uploaded = 0;
+    let failed = 0;
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Uploading...';
     progressWrap.classList.add('visible');
     errorMsg.classList.remove('visible');
 
-    // Fake progress while uploading (XHR for real progress)
-    const xhr = new XMLHttpRequest();
-    xhr.upload.addEventListener('progress', (e) => {
-      if (e.lengthComputable) {
-        const pct = Math.round((e.loaded / e.total) * 100);
-        progressBar.style.width = pct + '%';
-        progressLabel.textContent = `Uploading... ${pct}%`;
-      }
-    });
+    // Upload one at a time so each photo saves even if user exits early
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      progressLabel.textContent = `Uploading photo ${i + 1} of ${total}...`;
+      progressBar.style.width = Math.round((i / total) * 100) + '%';
 
-    xhr.addEventListener('load', () => {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('photos', file);
+
       try {
-        const res = JSON.parse(xhr.responseText);
-        if (res.success) {
-          uploadCard.style.display = 'none';
-          successCard.classList.add('visible');
-        } else {
-          showError(res.error || 'Upload failed. Please try again.');
-          resetUploadState();
-        }
+        const res = await fetch('/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) uploaded++;
+        else failed++;
       } catch(e) {
-        showError('Something went wrong. Please try again.');
-        resetUploadState();
+        failed++;
       }
-    });
+    }
 
-    xhr.addEventListener('error', () => {
-      showError('Connection error. Please check your internet and try again.');
-      resetUploadState();
-    });
+    progressBar.style.width = '100%';
+    progressLabel.textContent = `Done! ${uploaded} of ${total} photos uploaded.`;
 
-    xhr.open('POST', '/upload');
-    xhr.send(formData);
+    setTimeout(() => {
+      uploadCard.style.display = 'none';
+      successCard.classList.add('visible');
+    }, 800);
   });
 
   function showError(msg) {
