@@ -253,6 +253,9 @@
   <div class="countdown-reset" style="margin-top:20px;">Starting over in <span id="reset-countdown">10</span>s</div>
 </div>
 
+<!-- Hidden print image -->
+<img id="print-image" src="" style="display:none;">
+
 <!-- Hidden canvas for compositing the strip -->
 <canvas id="canvas"></canvas>
 
@@ -557,15 +560,11 @@
   }
 
   async function printImage(dataUrl) {
-    // Upload strip to server, then open the print page which auto-triggers AirPrint
-    const blob = await (await fetch(dataUrl)).blob();
-    const formData = new FormData();
-    formData.append('strip', blob, 'strip.jpg');
-    const res = await fetch('/booth-strip', { method: 'POST', body: formData });
-    const data = await res.json();
-    if (data.url) {
-      window.open(data.url, '_blank');
-    }
+    // Set the hidden print image and trigger window.print()
+    // @media print CSS hides everything except the image
+    document.getElementById('print-image').src = dataUrl;
+    await delay(300);
+    window.print();
   }
 
   // ── Done screen ────────────────────────────────────
