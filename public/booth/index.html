@@ -233,12 +233,11 @@
 
 <!-- PRINT SCREEN -->
 <div class="screen" id="screen-print">
-  <img id="strip-fullscreen" src="" style="max-height:80vh;max-width:100%;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,0.6);">
-  <div style="margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:16px;">
-    <p style="color:#fff;font-size:14px;letter-spacing:2px;text-transform:uppercase;text-align:center;">Tap Share → Canon PRINT to print</p>
-    <button onclick="shareStrip()" style="background:var(--gold);color:#000;font-size:20px;font-weight:800;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:999px;padding:20px 56px;cursor:pointer;">📤 Share to Print</button>
-    <button onclick="showDone()" style="background:transparent;color:#555;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;border:1px solid #333;border-radius:999px;padding:12px 32px;cursor:pointer;">Already Printed ✓</button>
-    <button onclick="reprint()" style="background:transparent;color:#555;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;border:1px solid #333;border-radius:999px;padding:12px 32px;cursor:pointer;">🖨️ Print Another Copy</button>
+  <img id="strip-fullscreen" src="" style="max-height:72vh;max-width:90%;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,0.6);">
+  <div style="margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <button onclick="shareStrip()" style="background:var(--gold);color:#000;font-size:22px;font-weight:800;letter-spacing:3px;text-transform:uppercase;border:none;border-radius:999px;padding:22px 64px;cursor:pointer;">🖨️ Print</button>
+    <button onclick="reprint()" style="background:transparent;color:#555;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;border:1px solid #333;border-radius:999px;padding:12px 32px;cursor:pointer;">Print Another Copy</button>
+    <button onclick="showDone()" style="background:transparent;color:#444;font-size:12px;letter-spacing:2px;text-transform:uppercase;border:none;padding:8px 20px;cursor:pointer;">Skip →</button>
   </div>
 </div>
 
@@ -543,26 +542,26 @@
 
   async function shareStrip() {
     if (!lastStripDataUrl) return;
-    try {
-      const blob = await (await fetch(lastStripDataUrl)).blob();
-      const file = new File([blob], 'sam-and-anna-booth.jpg', { type: 'image/jpeg' });
-      if (navigator.share && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'Sam & Anna Photo Booth'
-        });
-      } else {
-        // Fallback: open image in new tab so user can long-press save/print
-        window.open(lastStripDataUrl, '_blank');
-      }
-    } catch(err) {
-      if (err.name !== 'AbortError') console.error('Share error:', err);
-    }
+    printImage(lastStripDataUrl);
   }
 
   async function reprint() {
     if (!lastStripDataUrl) return;
-    await shareStrip();
+    printImage(lastStripDataUrl);
+  }
+
+  function printImage(dataUrl) {
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html><head>
+      <style>
+        * { margin:0; padding:0; }
+        @page { size: 4in 6in; margin: 0; }
+        html, body { width:4in; height:6in; background:#000; }
+        img { width:4in; height:6in; display:block; object-fit:fill; }
+      </style></head><body>
+      <img src="${dataUrl}" onload="window.print();">
+      </body></html>`);
+    w.document.close();
   }
 
   // ── Done screen ────────────────────────────────────
